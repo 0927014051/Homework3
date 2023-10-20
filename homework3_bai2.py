@@ -1,53 +1,50 @@
-#Họ và tên: Trịnh Thanh Sơn
-#MSSV: N20DCCN134
 import numpy as np
 import matplotlib.pyplot as plt
-def read_file(file_name, x_size):
+
+def read_file(file_name, xsize):
     try:
         with open(file_name, 'rb') as file:
-            data = np.fromfile(file, dtype=np.uint8, count=x_size * x_size)
-        if data.size != x_size * x_size:
-            raise Exception(f'Read file {file_name} fail')
+            data = np.fromfile(file, dtype=np.uint8, count=xsize * xsize)
+        if data.size != xsize * xsize:
+            raise Exception(f"Không thể đọc file {file_name}")
         return data.reshape(256, 256)
     except FileNotFoundError:
-        print(f'ERROR: Can not open file {file_name}!')
-def stretch(a):
-    min = np.min(a)
-    max = np.max(a)
-    x = 255.0 / (max - min)
-    str = np.round((a - min) * x)
-    return str.astype(np.uint8)
-def plot(data1, data2, data3, data4):
+        raise Exception(f'Không thể mở file {file_name}')
+
+def stretch(image):
+    maxV = 255
+    min_val = np.min(image)
+    max_val = np.max(image)
+    if min_val == max_val:
+        return image
+    stretched_factory = (maxV)/(max_val-min_val)
+    stretched = (image - min_val)*stretched_factory
+    return stretched.astype(np.uint8)
+
+def plot_images_and_histograms(original, stretched):
     plt.figure(figsize=(10, 8))
     plt.subplot(2, 2, 1)
-    plt.imshow(data1, cmap='gray', vmin=0, vmax=255)
+    plt.imshow(original, cmap='gray', vmin=0, vmax=255)
     plt.title('Original image')
 
     plt.subplot(2, 2, 2)
-    plt.imshow(data2, cmap='gray')
+    plt.imshow(stretched, cmap='gray')
     plt.title('Full-scale stretch')
 
     plt.subplot(2, 2, 3)
-    plt.bar(range(256), data3)
+    plt.hist(original.ravel(), bins=256, range=(0, 256), color='b', alpha=0.7)
     plt.title('Histogram image')
 
     plt.subplot(2, 2, 4)
-    plt.bar(range(256), data4)
+    plt.hist(stretched.ravel(), bins=256, range=(0, 256), color='g', alpha=0.7)
     plt.title('New histogram image')
+
     plt.show()
+
 def main():
-    x_size = 256
-    x = read_file('dataset/ladybin.sec', x_size)
-    x_his = np.histogram(x, bins= np.arange(257), range=(0, 256))[0]
+    xsize = 256
+    x = read_file('dataset/ladybin.sec', xsize)
     y = stretch(x)
-    y_his = np.histogram(y, bins= np.arange(257), range=(0, 256))[0]
-    plot(x, y, x_his, y_his)
+    plot_images_and_histograms(x, y)
 if __name__ == '__main__':
     main()
-
-
-
-
-
-
-
